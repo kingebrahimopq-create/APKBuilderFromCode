@@ -50,11 +50,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Stop Gradle daemon
+        run: ./gradlew --stop
+
+      - name: Clean project
+        run: ./gradlew clean --stacktrace --no-daemon
+
       - name: Run Lint
-        run: ./gradlew lintDebug --stacktrace
+        run: ./gradlew lintDebug --stacktrace --no-daemon
 
       - name: Run Tests
-        run: ./gradlew testDebug --stacktrace
+        run: ./gradlew testDebug --stacktrace --no-daemon
 
   build:
     name: Build APKs
@@ -91,11 +100,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Stop Gradle daemon
+        run: ./gradlew --stop
+
+      - name: Clean project
+        run: ./gradlew clean --stacktrace --no-daemon
+
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        env:
+          GRADLE_OPTS: -Xmx2048m -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace
+        run: ./gradlew assembleRelease --stacktrace --no-daemon
+        env:
+          GRADLE_OPTS: -Xmx2048m -Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v3
@@ -127,6 +149,9 @@ jobs:
         with:
           name: Release APK
           path: app/build/outputs/apk/release
+
+      - name: Verify APK exists
+        run: ls -la app/build/outputs/apk/release/
 
       - name: Release to Play Store
         uses: r0adkll/upload-google-play@v3
