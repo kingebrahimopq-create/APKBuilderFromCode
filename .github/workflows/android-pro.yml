@@ -47,7 +47,8 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |            ${{ runner.os }}-gradle-
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Run Lint
         run: ./gradlew lintDebug --stacktrace
@@ -96,7 +97,8 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease --stacktrace
 
-      - name: Upload Debug APK        uses: actions/upload-artifact@v3
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v3
         with:
           name: Debug APK
           path: app/build/outputs/apk/debug/*.apk
