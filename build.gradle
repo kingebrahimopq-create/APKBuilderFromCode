@@ -1,11 +1,6 @@
 // Top-level build file for APKBuilder Pro
 // حيث يمكن إضافة خيارات التكوين المشتركة لجميع المشاريع الفرعية/الوحدات
 
-plugins {
-    id 'com.android.application' version '8.2.2' apply false
-    id 'com.android.library' version '8.2.2' apply false
-}
-
 buildscript {
     ext {
         // متغيرات الإصدار
@@ -35,11 +30,16 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.android.application' version '8.2.2' apply false
+    id 'com.android.library' version '8.2.2' apply false
+}
+
 allprojects {
     repositories {
         google()
         mavenCentral()
-        jcenter()
+        // تمت إزالة jcenter() لأنه لم يعد مدعومًا
     }
 }
 
@@ -66,6 +66,7 @@ tasks.whenTaskAdded { task ->
     if (task.name == 'preBuild') {
         task.dependsOn checkConfiguration
     }
+}
 }
 
 // تحسينات الأداء
