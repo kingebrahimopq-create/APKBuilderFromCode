@@ -39,4 +39,4 @@
     <!-- Additional missing strings for MainActivityEnhanced -->
     <string name="error_empty_code">الرجاء إدخال الكود</string>
     <string name="error_code_too_short">الكود قصير جداً (الحد الأدنى 10 أحرف)</string>
-</resources>
+</resources>  <!-- هذا السطر المهم -->
