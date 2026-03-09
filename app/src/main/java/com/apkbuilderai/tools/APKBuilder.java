@@ -15,12 +15,6 @@ import java.util.List;
 public class APKBuilder {
     private static final String TAG = "APKBuilder";
 
-    /**
-     * بناء APK من الكود المدخل
-     * @param context السياق (Context) للتطبيق
-     * @param code الكود المراد بناء APK منه
-     * @throws Exception إذا حدث خطأ أثناء البناء
-     */
     public static void build(Context context, String code) throws Exception {
         if (context == null) {
             throw new IllegalArgumentException("السياق (Context) لا يمكن أن يكون فارغاً");
@@ -33,12 +27,11 @@ public class APKBuilder {
         Log.d(TAG, "بدء عملية بناء APK");
 
         try {
-            // الخطوة 1: تحليل الكود باستخدام NeuralCompiler
+            // الخطوة 1: تحليل الكود
             Log.d(TAG, "الخطوة 1: تحليل الكود...");
             NeuralCompiler neuralCompiler = new NeuralCompiler(context);
             neuralCompiler.analyzeCode(code);
 
-            // التحقق من وجود أخطاء في التحليل
             if (neuralCompiler.hasErrors()) {
                 List<String> errors = neuralCompiler.getErrors();
                 StringBuilder errorMessage = new StringBuilder("أخطاء في الكود:\n");
@@ -48,13 +41,12 @@ public class APKBuilder {
                 throw new Exception(errorMessage.toString());
             }
 
-            // عرض التحذيرات إن وجدت
             List<String> warnings = neuralCompiler.getWarnings();
             if (!warnings.isEmpty()) {
                 Log.w(TAG, "تحذيرات: " + warnings.toString());
             }
 
-            // الخطوة 2: كشف لغة البرمجة والترجمة إلى Java
+            // الخطوة 2: كشف لغة البرمجة والترجمة
             Log.d(TAG, "الخطوة 2: كشف لغة البرمجة والترجمة...");
             String language = UniversalTranspiler.detectLanguage(code);
             Log.d(TAG, "اللغة المكتشفة: " + language);
@@ -64,10 +56,13 @@ public class APKBuilder {
 
             // الخطوة 3: تشفير الكود
             Log.d(TAG, "الخطوة 3: تشفير الكود...");
-            String encryptedCode = SecurityEngine.encryptCode(translatedCode);
+            String[] encryptionResult = SecurityEngine.encryptCode(translatedCode);
+            String encryptedCode = encryptionResult[0];
+            String encryptionKey = encryptionResult[1];
             String codeHash = SecurityEngine.hashCode(translatedCode);
             Log.d(TAG, "تم تشفير الكود بنجاح");
             Log.d(TAG, "بصمة الكود (Hash): " + codeHash);
+            Log.d(TAG, "مفتاح التشفير: " + (encryptionKey.isEmpty() ? "فشل" : "تم"));
 
             // الخطوة 4: توليد ملف DEX
             Log.d(TAG, "الخطوة 4: توليد ملف DEX...");
@@ -79,7 +74,7 @@ public class APKBuilder {
             DEXGenerator.generateFromJava(translatedCode, tempDir);
             Log.d(TAG, "تم توليد ملف DEX بنجاح");
 
-            // الخطوة 5: التحقق من نجاح البناء
+            // الخطوة 5: التحقق
             Log.d(TAG, "الخطوة 5: التحقق من نجاح البناء...");
             File dexFile = new File(tempDir, "classes.dex");
             if (dexFile.exists() && dexFile.length() > 0) {
@@ -98,10 +93,6 @@ public class APKBuilder {
         }
     }
 
-    /**
-     * الحصول على معلومات عن البناء
-     * @return معلومات نصية عن آخر عملية بناء
-     */
     public static String getBuildInfo() {
         StringBuilder info = new StringBuilder();
         info.append("معلومات البناء:\n");
