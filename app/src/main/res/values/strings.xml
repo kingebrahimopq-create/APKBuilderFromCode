@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">APK Builder From Code</string>
+    <string name="app_name">APK Builder Pro</string>
     <string name="hello_world">مرحباً بك في APK Builder</string>
     <string name="welcome_message">تطبيق لبناء ملفات APK من الأكواد</string>
     <string name="button_build">بناء APK</string>
@@ -8,10 +8,12 @@
     <string name="build_success">تم البناء بنجاح!</string>
     <string name="build_error">حدث خطأ أثناء البناء</string>
     
-    <!-- Missing resources for enhanced layout -->
+    <!-- وصف التطبيق -->
     <string name="app_description">محول الأكواد إلى ملفات APK</string>
     <string name="button_clear">مسح</string>
     <string name="button_download">تحميل</string>
+    
+    <!-- حالات البناء -->
     <string name="status_ready">جاهز لبناء APK من الكود</string>
     <string name="status_analyzing">جاري تحليل الكود...</string>
     <string name="status_detecting_language">جاري كشف اللغة...</string>
@@ -21,22 +23,26 @@
     <string name="status_verifying">جاري التحقق من البناء...</string>
     <string name="status_success">✓ تم البناء بنجاح!</string>
     <string name="status_error">✗ حدث خطأ أثناء البناء</string>
+    
+    <!-- اللغات الأساسية المدعومة (5 لغات فقط) -->
     <string name="language_label">اختر لغة البرمجة:</string>
     <string-array name="languages">
         <item>Java</item>
+        <item>Kotlin</item>
         <item>Python</item>
         <item>JavaScript</item>
-        <item>Kotlin</item>
         <item>Dart</item>
-        <item>كشف تلقائي</item>
     </string-array>
+    
+    <!-- مقاييس الكود -->
     <string name="metrics_lines">عدد الأسطر:</string>
     <string name="metrics_chars">عدد الأحرف:</string>
     <string name="metrics_words">عدد الكلمات:</string>
     <string name="metrics_functions">عدد الدوال:</string>
     <string name="metrics_classes">عدد الفئات:</string>
 
-    <!-- Additional missing strings for MainActivityEnhanced -->
+    <!-- رسائل الخطأ -->
     <string name="error_empty_code">الرجاء إدخال الكود</string>
     <string name="error_code_too_short">الكود قصير جداً (الحد الأدنى 10 أحرف)</string>
-</resources>  <!-- هذا السطر المهم -->
+    <string name="error_unsupported_language">اللغة غير مدعومة. اللغات المدعومة: Java, Kotlin, Python, JavaScript, Dart</string>
+</resources>
