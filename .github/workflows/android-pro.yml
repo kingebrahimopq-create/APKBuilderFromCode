@@ -13,9 +13,10 @@ env:
   JAVA_VERSION: '17'
   GRADLE_VERSION: '8.0'
   ANDROID_API: '34'
+  ANDROID_BUILD_TOOLS: '34.0.0'
 
 jobs:
-  # مرحلة الفحص والتحليل
+  # مرحلة الفحص والتحليل (تم إصلاحها)
   analysis:
     name: Code Analysis & Linting
     runs-on: ubuntu-latest
@@ -34,135 +35,33 @@ jobs:
         distribution: 'temurin'
         cache: 'gradle'
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    - name: Run Lint Analysis
-      run: ./gradlew lint --stacktrace || true
-
-    - name: Run Unit Tests
-      run: ./gradlew test --stacktrace || true
-
-    - name: Upload Lint Reports
-      uses: actions/upload-artifact@v4
-      if: always()
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
       with:
-        name: lint-reports
-        path: app/build/reports/
-        retention-days: 7
+        sdk: ${{ env.ANDROID_API }}
+        build-tools: ${{ env.ANDROID_BUILD_TOOLS }}
 
-  # مرحلة البناء
+    - name: Cache Gradle
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key:{{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Run Lint
+      run: ./gradlew lintDebug --stacktrace
+
+    - name: Run Tests
+      run: ./gradlew testDebug --stacktrace
+
+  # مرحلة البناء (التصحيح الرئيسي)
   build:
-    name: Build APK
+    name: Build APKs
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     needs: analysis
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'temurin'
-        cache: 'gradle'
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    - name: Create local.properties
-      run: |
-        echo "sdk.dir=$ANDROID_HOME" > local.properties
-        echo "gradle.wrapper.download.retry.count=3" >> gradle.properties
-        echo "gradle.wrapper.download.retry.delay=5000" >> gradle.properties
-
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug --stacktrace
-      continue-on-error: false
-
-    - name: List generated APKs (Debug)
-      run: |
-        echo "=== Searching for Debug APK files ==="
-        find . -name "*.apk" -type f
-        echo "=== APK Directory Structure ==="
-        ls -R app/build/outputs/apk/debug/ || echo "No debug APK found"
-
-    - name: Upload Debug APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug-apk-${{ github.run_number }}
-        path: app/build/outputs/apk/debug/*.apk
-        if-no-files-found: error
-        retention-days: 30
-
-    - name: Build Release APK (unsigned)
-      run: ./gradlew assembleRelease --stacktrace
-      continue-on-error: true
-
-    - name: List generated APKs (Release)
-      run: |
-        echo "=== Searching for Release APK files ==="
-        find . -name "*.apk" -type f
-        echo "=== Release APK Directory Structure ==="
-        ls -R app/build/outputs/apk/release/ || echo "No release APK found"
-      continue-on-error: true
-
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: app-release-apk-${{ github.run_number }}
-        path: app/build/outputs/apk/release/*.apk
-        if-no-files-found: warn
-        retention-days: 30
-      continue-on-error: true
-
-  # مرحلة الاختبار
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: build
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'temurin'
-        cache: 'gradle'
-
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    - name: Run Unit Tests
-      run: ./gradlew test --stacktrace
-      continue-on-error: true
-
-    - name: Generate Test Report
-      run: ./gradlew testDebugUnitTest --stacktrace
-      continue-on-error: true
-
-    - name: Upload Test Reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-reports-${{ github.run_number }}
-        path: app/build/reports/tests/
-        retention-days: 7
-
-  # مرحلة الإصدار والنشر
-  release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [build, test]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout code
@@ -170,56 +69,86 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Download Debug APK
-      uses: actions/download-artifact@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
       with:
-        name: app-debug-apk-${{ github.run_number }}
-        path: ./apk-output
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: 'gradle'
 
-    - name: Get version info
-      id: version
-      run: |
-        VERSION=$(grep "versionName" app/build.gradle | head -1 | sed 's/.*"\(.*\)".*/\1/')
-        BUILD_NUMBER=${{ github.run_number }}
-        echo "version=${VERSION}" >> $GITHUB_OUTPUT
-        echo "build_number=${BUILD_NUMBER}" >> $GITHUB_OUTPUT
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
       with:
-        files: ./apk-output/*.apk
-        draft: false
-        prerelease: false
+        sdk: ${{ env.ANDROID_API }}
+        build-tools: ${{ env.ANDROID_BUILD_TOOLS }}
+
+    - name: Cache Gradle
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    # 🔑 التعديل الأهم: استخدام أomerات Gradle 8.0 الصحيحة
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --stacktrace
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ANDROID_HOME: ${{ env.ANDROID_HOME }}
+    - name: Build Release APK
+      run: ./gradlew assembleRelease --stacktrace
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-    - name: Create Build Summary
+    # 🔑 إصلاح خطأ التوقيع (إذا لزم)
+    - name: Sign Release APK
       run: |
-        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-        echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Build Number**: ${{ steps.version.outputs.build_number }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        keytool -genkey -v -keystore my-release-key.jks -alias my-key-alias \
+          -keyalg RSA -keysize 2048 -validity 10000 \
+          -storepass android -keypass android
+        ./gradlew bundleRelease --stacktrace
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_HOME }}
 
-  # مرحلة التنبيهات
-  notify:
-    name: Notify Build Status
+    # رفع الملفات الناتجة
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: Debug APK
+        path: app/build/outputs/apk/debug/*.apk
+
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: Release APK
+        path: app/build/outputs/apk/release/*.apk
+        retention-days: 30
+
+  # مرحلة التوزيع (اختياري)
+  release:
+    name: Release to Play Store
     runs-on: ubuntu-latest
-    if: always()
-    needs: [analysis, build, test]
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 15
 
     steps:
-    - name: Check Build Status
-      run: |
-        if [ "${{ needs.build.result }}" == "success" ]; then
-          echo "✅ Build completed successfully!"
-        else
-          echo "❌ Build failed!"
-        fi
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    - name: Create Notification
-      run: |
-        echo "Build Status Report:"
-        echo "- Analysis: ${{ needs.analysis.result }}"
-        echo "- Build: ${{ needs.build.result }}"
-        echo "- Tests: ${{ needs.test.result }}"
+    - name: Download Release APK
+      uses: actions/download-artifact@v3
+      with:
+        name: Release APK
+        path: app/build/outputs/apk/release
+
+    - name: Release to Play Store
+      uses: r0adkll/upload-google-play@v1      with:
+        serviceAccountJson: ${{ secrets.PLAYSTORE_SERVICE_ACCOUNT }}
+        packageName: com.example.apkbuilder
+        releaseFiles: app/build/outputs/apk/release/*.apk
+        track: production
+        userFraction: 1.0
+        rollout: 100
