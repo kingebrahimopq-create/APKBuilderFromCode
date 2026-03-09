@@ -15,9 +15,9 @@ public class SecurityEngine {
     /**
      * تشفير الكود باستخدام AES
      * @param code الكود المراد تشفيره
-     * @return الكود المشفر
+     * @return مصفوفة تحتوي على [0] الكود المشفر و [1] المفتاح المشفر Base64
      */
-    public static String encryptCode(String code) {
+    public static String[] encryptCode(String code) {
         try {
             // توليد مفتاح عشوائي آمن
             KeyGenerator keyGenerator = KeyGenerator.getInstance(ALGORITHM);
@@ -32,17 +32,47 @@ public class SecurityEngine {
             byte[] encryptedData = cipher.doFinal(code.getBytes());
 
             // تحويل البيانات المشفرة إلى Base64
-            return Base64.getEncoder().encodeToString(encryptedData);
+            String encryptedCode = Base64.getEncoder().encodeToString(encryptedData);
+
+            // تحويل المفتاح إلى Base64 للتخزين
+            String encodedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+
+            // إرجاع كل من الكود المشفر والمفتاح
+            return new String[] {encryptedCode, encodedKey};
+
         } catch (Exception e) {
             android.util.Log.e("SecurityEngine", "Encryption error: " + e.getMessage());
-            return code;
+            return new String[] {code, ""};
         }
     }
 
     /**
-     * حساب بصمة الكود باستخدام SHA-256 (للتحقق من السلامة)
-     * @param code الكود المراد حساب بصمته
-     * @return بصمة الكود
+     * فك تشفير الكود
+     * @param encryptedCode الكود المشفر
+     * @param encodedKey المفتاح المشفر Base64
+     * @return الكود المفكوك
+     */
+    public static String decryptCode(String encryptedCode, String encodedKey) {
+        try {
+            // تحويل المفتاح من Base64
+            byte[] keyBytes = Base64.getDecoder().decode(encodedKey);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(keyBytes, ALGORITHM);
+
+            // فك تشفير البيانات
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+
+            byte[] decryptedData = cipher.doFinal(Base64.getDecoder().decode(encryptedCode));
+            return new String(decryptedData);
+
+        } catch (Exception e) {
+            android.util.Log.e("SecurityEngine", "Decryption error: " + e.getMessage());
+            return encryptedCode;
+        }
+    }
+
+    /**
+     * حساب بصمة الكود باستخدام SHA-256
      */
     public static String hashCode(String code) {
         try {
@@ -61,13 +91,7 @@ public class SecurityEngine {
         }
     }
 
-    /**
-     * التحقق من سلامة الكود
-     * @param code الكود الأصلي
-     * @param hash البصمة المحفوظة
-     * @return true إذا كانت البصمة متطابقة
-     */
     public static boolean verifyCodeIntegrity(String code, String hash) {
         return hashCode(code).equals(hash);
     }
-}
+                }
