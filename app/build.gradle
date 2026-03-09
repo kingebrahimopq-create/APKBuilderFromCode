@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.apkbuilder'
+    namespace 'com.apkbuilderai'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.apkbuilder"
+        applicationId "com.apkbuilderai"
         minSdk 21
         targetSdk 34
         versionCode 2

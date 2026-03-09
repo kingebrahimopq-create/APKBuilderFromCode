@@ -94,4 +94,4 @@ public class SecurityEngine {
     public static boolean verifyCodeIntegrity(String code, String hash) {
         return hashCode(code).equals(hash);
     }
-                }
+}
