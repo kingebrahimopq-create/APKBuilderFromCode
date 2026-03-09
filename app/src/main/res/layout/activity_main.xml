@@ -3,82 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/background">
+    android:gravity="center">
 
-    <!-- Header -->
     <TextView
-        android:id="@+id/header_title"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="@color/primary"
-        android:gravity="center"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Welcome message -->
-    <TextView
-        android:id="@+id/welcome_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/welcome_message"
-        android:textSize="16sp"
-        android:textColor="@color/on_background"
-        android:gravity="center"
-        android:layout_marginBottom="32dp" />
-
-    <!-- Code input -->
-    <EditText
-        android:id="@+id/code_input"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:hint="أدخل الكود الخاص بك (Java/Python/JS/Kotlin/Dart)..."
-        android:inputType="textMultiLine"
-        android:typeface="monospace"
-        android:background="@color/surface"
-        android:textColor="@color/on_surface"
-        android:textColorHint="@color/on_surface"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Build button -->
-    <Button
-        android:id="@+id/build_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/button_build"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:background="@color/primary"
-        android:textColor="@color/on_primary"
-        android:padding="16dp"
-        android:layout_marginBottom="12dp" />
-
-    <!-- Status text -->
-    <TextView
-        android:id="@+id/status_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="14sp"
-        android:textColor="@color/on_background"
-        android:gravity="center"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="12dp" />
-
-    <!-- Settings button -->
-    <Button
-        android:id="@+id/settings_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/button_settings"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:background="@color/secondary"
-        android:textColor="@color/on_secondary"
-        android:padding="16dp" />
-
+        android:text="Hello, APKBuilder Pro!"
+        android:textSize="24sp" />
 </LinearLayout>
