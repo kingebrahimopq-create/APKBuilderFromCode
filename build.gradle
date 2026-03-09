@@ -1,0 +1,77 @@
+// Top-level build file for APKBuilder Pro
+// حيث يمكن إضافة خيارات التكوين المشتركة لجميع المشاريع الفرعية/الوحدات
+
+plugins {
+    id 'com.android.application' version '8.2.2' apply false
+    id 'com.android.library' version '8.2.2' apply false
+}
+
+buildscript {
+    ext {
+        // متغيرات الإصدار
+        compileSdkVersion = 34
+        minSdkVersion = 21
+        targetSdkVersion = 34
+        
+        // إصدارات المكتبات
+        androidxVersion = '1.6.1'
+        materialVersion = '1.10.0'
+        junitVersion = '4.13.2'
+        
+        // إصدار التطبيق
+        versionCode = 2
+        versionName = '2.0.0'
+    }
+    
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.2'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        jcenter()
+    }
+}
+
+// تنظيف المشروع
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+// مهمة مخصصة للتحقق من الإعدادات
+task checkConfiguration {
+    doLast {
+        println("=== APKBuilder Pro Build Configuration ===")
+        println("Compile SDK: ${compileSdkVersion}")
+        println("Min SDK: ${minSdkVersion}")
+        println("Target SDK: ${targetSdkVersion}")
+        println("Version Code: ${versionCode}")
+        println("Version Name: ${versionName}")
+        println("========================================")
+    }
+}
+
+// تشغيل فحص الإعدادات قبل البناء
+tasks.whenTaskAdded { task ->
+    if (task.name == 'preBuild') {
+        task.dependsOn checkConfiguration
+    }
+}
+
+// تحسينات الأداء
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:deprecation"
+        options.compilerArgs << "-Xlint:unchecked"
+    }
+}
