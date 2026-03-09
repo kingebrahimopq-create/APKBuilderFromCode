@@ -1,36 +1,13 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+// Top-level build file
 
 buildscript {
-    ext {
-        // إصدارات SDK
-        compileSdkVersion = 34
-        minSdkVersion = 21
-        targetSdkVersion = 34
-        
-        // إصدارات المكتبات
-        androidxCoreVersion = '1.9.0'
-        androidxAppCompatVersion = '1.6.1'
-        materialVersion = '1.10.0'
-        junitVersion = '4.13.2'
-        
-        // إصدار التطبيق
-        versionCode = 2
-        versionName = '2.0.0'
-    }
-    
     repositories {
         google()
         mavenCentral()
     }
-    
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.2'
     }
-}
-
-plugins {
-    id 'com.android.application' version '8.2.2' apply false
-    id 'com.android.library' version '8.2.2' apply false
 }
 
 task clean(type: Delete) {
