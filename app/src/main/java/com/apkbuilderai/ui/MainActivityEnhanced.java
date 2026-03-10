@@ -212,9 +212,8 @@ public class MainActivityEnhanced extends AppCompatActivity {
      */
     private void openSettings() {
         Log.d(TAG, "فتح الإعدادات");
-        Toast.makeText(this, "الإعدادات قريباً", Toast.LENGTH_SHORT).show();
-        statusText.setText("الإعدادات قيد التطوير");
-        // TODO: تطبيق نشاط الإعدادات
+        android.content.Intent intent = new android.content.Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     /**
