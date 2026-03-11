@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
 
+// تم تعطيل هذه الفئة مؤقتاً لتجنب التعارض مع نسخة Java
+/*
 class MainActivityEnhanced : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -14,3 +16,4 @@ class MainActivityEnhanced : AppCompatActivity() {
         setContentView(textView)
     }
 }
+*/
