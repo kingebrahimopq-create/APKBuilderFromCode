@@ -98,7 +98,8 @@ public class APKBuilderEnhanced {
             addLog("الخطوة 3: تشفير الكود...", LogLevel.INFO);
             updateProgress(50, "تشفير الكود");
 
-            String encryptedCode = SecurityEngine.encryptCode(translatedCode);
+            String[] encryptionResult = SecurityEngine.encryptCode(translatedCode);
+            String encryptedCode = encryptionResult[0];
             String codeHash = SecurityEngine.hashCode(translatedCode);
 
             addLog("تم تشفير الكود بنجاح", LogLevel.INFO);
