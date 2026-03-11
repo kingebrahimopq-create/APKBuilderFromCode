@@ -7,12 +7,10 @@ import java.util.List;
 
 public class NeuralCompiler {
     private static final String TAG = "NeuralCompiler";
-    private Context context;
     private List<String> errors;
     private List<String> warnings;
 
     public NeuralCompiler(Context ctx) {
-        this.context = ctx;
         this.errors = new ArrayList<>();
         this.warnings = new ArrayList<>();
     }
@@ -118,21 +116,25 @@ public class NeuralCompiler {
      * @param code الكود المراد التحقق منه
      */
     private void checkKeywords(String code) {
-        // التحقق من وجود دالة main
-        if (!code.contains("main") && !code.contains("def ") && !code.contains("function")) {
+        // التحقق من وجود دالة main باستخدام تعبير منتظم أكثر دقة
+        boolean hasMain = code.contains("public static void main") ||
+                         code.contains("def main(") ||
+                         code.contains("def main (") ||
+                         code.contains("function main(") ||
+                         code.contains("fun main(") ||
+                         code.contains("void main()") ||
+                         code.contains("void main (");
+
+        if (!hasMain) {
             warnings.add("لم يتم العثور على دالة رئيسية (main)");
         }
 
-        // التحقق من وجود كلمات مفتاحية أساسية
-        if (code.contains("if") && !code.contains("else")) {
-            warnings.add("يوجد شرط if بدون else");
-        }
-
-        // التحقق من الدوال المعرفة
-        int functionCount = countOccurrences(code, "def ") + 
+        // التحقق من وجود كلمات مفتاحية أساسية (إزالة التحقق من if/else لأنه ليس خطأ)
+        // البحث عن دوال
+        int functionCount = countOccurrences(code, "def ") +
                            countOccurrences(code, "function ") +
                            countOccurrences(code, "fun ");
-        
+
         if (functionCount > 0) {
             Log.d(TAG, "تم العثور على " + functionCount + " دالة");
         }
@@ -143,15 +145,39 @@ public class NeuralCompiler {
      * @param code الكود المراد التحقق منه
      */
     private void checkComments(String code) {
-        int singleLineComments = countOccurrences(code, "//");
-        int multiLineComments = countOccurrences(code, "/*");
+        // تجاهل التعليقات داخل النصوص
+        String codeWithoutStrings = removeStrings(code);
+        int singleLineComments = countOccurrences(codeWithoutStrings, "//");
+        int multiLineComments = countOccurrences(codeWithoutStrings, "/*");
+        int closingMultiLine = countOccurrences(codeWithoutStrings, "*/");
 
         if (singleLineComments > 0 || multiLineComments > 0) {
-            Log.d(TAG, "تم العثور على " + singleLineComments + " تعليق سطر واحد و" + 
+            Log.d(TAG, "تم العثور على " + singleLineComments + " تعليق سطر واحد و" +
                       multiLineComments + " تعليق متعدد الأسطر");
+            if (multiLineComments > 0 && closingMultiLine != multiLineComments) {
+                errors.add("تعليق متعدد الأسطر غير مغلق (*/)");
+            }
         } else {
             warnings.add("الكود لا يحتوي على تعليقات توضيحية");
         }
+    }
+
+    /**
+     * إزالة النصوص من الكود لتجنب عد التعليقات بشكل خاطئ
+     */
+    private String removeStrings(String code) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < code.length(); i++) {
+            char c = code.charAt(i);
+            if (c == '"' || c == '\'') {
+                int end = skipString(code, i);
+                result.append(code.substring(i, end + 1));
+                i = end;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     /**
@@ -196,6 +222,9 @@ public class NeuralCompiler {
     }
 
     private int skipString(String code, int startIndex) {
+        if (startIndex >= code.length()) {
+            return code.length();
+        }
         char quote = code.charAt(startIndex);
         int i = startIndex + 1;
         while (i < code.length()) {
@@ -204,7 +233,7 @@ public class NeuralCompiler {
             }
             i++;
         }
-        return code.length() - 1;
+        return code.length();
     }
 
     private int getLineNumber(String code, int charIndex) {
