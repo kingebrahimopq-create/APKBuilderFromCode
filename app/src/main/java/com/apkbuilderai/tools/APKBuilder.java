@@ -2,7 +2,6 @@ package com.apkbuilderai.tools;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.apkbuilderai.core.DEXGenerator;
 import com.apkbuilderai.core.NeuralCompiler;
@@ -14,6 +13,7 @@ import java.util.List;
 
 public class APKBuilder {
     private static final String TAG = "APKBuilder";
+    private static final long MAX_CODE_SIZE = 1024 * 1024; // 1MB maximum
 
     public static void build(Context context, String code) throws Exception {
         if (context == null) {
@@ -24,8 +24,14 @@ public class APKBuilder {
             throw new IllegalArgumentException("الكود المدخل فارغ");
         }
 
+        // التحقق من حجم الكود
+        if (code.length() > MAX_CODE_SIZE) {
+            throw new IllegalArgumentException("حجم الكود كبير جداً (الحد الأقصى: 1MB)");
+        }
+
         Log.d(TAG, "بدء عملية بناء APK");
 
+        File tempDir = null;
         try {
             // الخطوة 1: تحليل الكود
             Log.d(TAG, "الخطوة 1: تحليل الكود...");
@@ -57,7 +63,6 @@ public class APKBuilder {
             // الخطوة 3: تشفير الكود
             Log.d(TAG, "الخطوة 3: تشفير الكود...");
             String[] encryptionResult = SecurityEngine.encryptCode(translatedCode);
-            String encryptedCode = encryptionResult[0];
             String encryptionKey = encryptionResult[1];
             String codeHash = SecurityEngine.hashCode(translatedCode);
             Log.d(TAG, "تم تشفير الكود بنجاح");
@@ -66,9 +71,11 @@ public class APKBuilder {
 
             // الخطوة 4: توليد ملف DEX
             Log.d(TAG, "الخطوة 4: توليد ملف DEX...");
-            File tempDir = new File(context.getCacheDir(), "temp_build");
+            tempDir = new File(context.getCacheDir(), "temp_build");
             if (!tempDir.exists()) {
-                tempDir.mkdirs();
+                if (!tempDir.mkdirs()) {
+                    throw new IOException("فشل في إنشاء المجلد المؤقت");
+                }
             }
 
             DEXGenerator.generateFromJava(translatedCode, tempDir);
@@ -90,6 +97,29 @@ public class APKBuilder {
         } catch (Exception e) {
             Log.e(TAG, "خطأ أثناء بناء APK: " + e.getMessage(), e);
             throw new Exception("فشل في بناء APK: " + e.getMessage(), e);
+        } finally {
+            // تنظيف المجلد المؤقت
+            if (tempDir != null && tempDir.exists()) {
+                deleteDirectory(tempDir);
+            }
+        }
+    }
+
+    private static void deleteDirectory(File dir) {
+        if (dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    deleteDirectory(file);
+                }
+            }
+        }
+        dir.delete();
+    }
+
+    private static class IOException extends Exception {
+        public IOException(String message) {
+            super(message);
         }
     }
 
