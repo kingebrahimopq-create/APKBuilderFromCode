@@ -15,7 +15,9 @@ public class DEXGenerator {
 
     public static void generateFromJava(String javaCode, File outputDir) throws IOException {
         if (!outputDir.exists()) {
-            outputDir.mkdirs();
+            if (!outputDir.mkdirs()) {
+                throw new IOException("فشل في إنشاء مجلد الإخراج: " + outputDir.getAbsolutePath());
+            }
         }
 
         try {
