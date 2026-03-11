@@ -80,12 +80,12 @@ public class UniversalTranspiler {
      * التحقق من أن الكود هو كود Python
      */
     private static boolean isPythonCode(String code) {
-        return code.contains("def ") || 
-               code.contains("import ") && !code.contains("import java") ||
+        return code.contains("def ") ||
+               (code.contains("import ") && !code.contains("import java")) ||
                code.contains("if __name__") ||
-               code.contains("class ") && code.contains("self") ||
+               (code.contains("class ") && code.contains("self")) ||
                code.contains("print(") ||
-               code.contains("for ") && code.contains(" in ");
+               (code.contains("for ") && code.contains(" in "));
     }
 
     /**
