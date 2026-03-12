@@ -83,8 +83,7 @@ public class APKBuilderPro {
 
             // الخطوة 3: التشفير والأمان
             notifyStepStarted("تشفير الكود");
-            String[] encryptionResult = SecurityEngine.encryptCode(translatedCode);
-            String encryptedCode = encryptionResult[0];
+            String encryptedCode = SecurityEngine.encryptCode(translatedCode)[0];
             String codeHash = SecurityEngine.hashCode(translatedCode);
             notifyStepCompleted("تشفير الكود");
             notifyProgress(40);
